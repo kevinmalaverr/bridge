@@ -22,3 +22,15 @@ func (s *Server) Listen() error {
 	}
 	return nil
 }
+
+func (s *Server) Handle(path string, handler http.HandlerFunc) {
+	s.router.rules[path] = handler
+}
+
+func (s *Server) AddMiddleware(f http.HandlerFunc, middlewares ...Middleware) http.HandlerFunc {
+	for _, m := range middlewares {
+		// pass handler to each middleware
+		f = m(f)
+	}
+	return f
+}

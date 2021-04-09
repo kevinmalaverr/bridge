@@ -6,14 +6,16 @@ import (
 )
 
 type Server struct {
-	port   string
-	router *Router
+	port               string
+	router             *Router
+	generalMiddlewares []Middleware
 }
 
 func NewServer(port string) *Server {
 	return &Server{
-		port:   port,
-		router: NewRouter(),
+		port:               port,
+		router:             NewRouter(),
+		generalMiddlewares: make([]Middleware, 0),
 	}
 }
 
@@ -32,10 +34,22 @@ func (s *Server) Handle(path string, method string, handler http.HandlerFunc) {
 	if !exist {
 		s.router.rules[path] = make(map[string]http.HandlerFunc)
 	}
+	s.applyMiddlewares(handler)
 	s.router.rules[path][method] = handler
 }
 
+func (s *Server) Use(middleware Middleware) {
+	s.generalMiddlewares = append(s.generalMiddlewares, middleware)
+}
+
+func (s *Server) applyMiddlewares(handler http.HandlerFunc) {
+	for _, m := range s.generalMiddlewares {
+		handler = m(handler)
+	}
+}
+
 func (s *Server) AddMiddleware(f http.HandlerFunc, middlewares ...Middleware) http.HandlerFunc {
+
 	for _, m := range middlewares {
 		// pass handler to each middleware
 		f = m(f)

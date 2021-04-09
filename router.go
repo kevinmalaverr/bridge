@@ -30,6 +30,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, request *http.Request) {
 
 	if !methodExist {
 		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
 	}
 
 	handler(w, request)

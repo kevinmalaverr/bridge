@@ -38,8 +38,8 @@ func (s *Server) Handle(path string, method string, handler http.HandlerFunc) {
 	s.router.rules[path][method] = handler
 }
 
-func (s *Server) Use(middleware Middleware) {
-	s.generalMiddlewares = append(s.generalMiddlewares, middleware)
+func (s *Server) Use(middleware MiddlewareFunc) {
+	s.generalMiddlewares = append(s.generalMiddlewares, SetMiddleware(middleware))
 }
 
 func (s *Server) applyMiddlewares(handler http.HandlerFunc) {
@@ -48,11 +48,11 @@ func (s *Server) applyMiddlewares(handler http.HandlerFunc) {
 	}
 }
 
-func (s *Server) AddMiddleware(f http.HandlerFunc, middlewares ...Middleware) http.HandlerFunc {
+func (s *Server) AddMiddleware(f http.HandlerFunc, middlewares ...MiddlewareFunc) http.HandlerFunc {
 
 	for _, m := range middlewares {
 		// pass handler to each middleware
-		f = m(f)
+		f = SetMiddleware(m)(f)
 	}
 	return f
 }

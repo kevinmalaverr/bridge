@@ -4,24 +4,24 @@ import (
 	"net/http"
 )
 
-type Router struct {
+type router struct {
 	rules map[string]map[string]http.HandlerFunc
 }
 
-func NewRouter() *Router {
-	return &Router{
+func newRouter() *router {
+	return &router{
 		rules: make(map[string]map[string]http.HandlerFunc),
 	}
 }
 
-func (r *Router) FindHandler(path string, method string) (http.HandlerFunc, bool, bool) {
+func (r *router) findHandler(path string, method string) (http.HandlerFunc, bool, bool) {
 	_, exist := r.rules[path]
 	handler, methodExist := r.rules[path][method]
 	return handler, exist, methodExist
 }
 
-func (r *Router) ServeHTTP(w http.ResponseWriter, request *http.Request) {
-	handler, exist, methodExist := r.FindHandler(request.URL.Path, request.Method)
+func (r *router) ServeHTTP(w http.ResponseWriter, request *http.Request) {
+	handler, exist, methodExist := r.findHandler(request.URL.Path, request.Method)
 
 	if !exist {
 		w.WriteHeader(http.StatusNotFound)
